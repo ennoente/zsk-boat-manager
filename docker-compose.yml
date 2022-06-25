@@ -1,0 +1,30 @@
+version: "3.1"
+
+services:
+  db:
+    image: mysql
+    container_name: boat-manager-db
+    restart: always
+    platform: linux/amd64
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: boats
+    ports:
+      - "3306:3306"
+
+  frontend:
+    image: boat-manager-frontend:latest
+    container_name: boat-manager-frontend
+    depends_on:
+      - backend
+    ports:
+    - "80:80"
+
+  backend:
+    image: boat-manager-backend:latest
+    container_name: boat-manager-backend
+    depends_on:
+      - db
+    command: [ "./wait-for-it.sh", "db:3306", "--", "uvicorn", "api:app", "--host=0.0.0.0", "--reload" ]
+    ports:
+    - "8000:8000"
